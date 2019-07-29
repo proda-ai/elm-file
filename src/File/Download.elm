@@ -20,7 +20,7 @@ event.
 
 
 import Bytes exposing (Bytes)
-import Elm.Kernel.File
+import Native.File
 import Task
 
 
@@ -66,7 +66,7 @@ send the URL out a `port` and do something even more custom in JavaScript!
 -}
 url : String -> Cmd msg
 url href =
-  Task.perform never (Elm.Kernel.File.downloadUrl href)
+  Task.perform never (Native.File.downloadUrl href)
 
 
 {-| Download a `String` as a file. Maybe you markdown editor in the browser,
@@ -83,7 +83,7 @@ case is is markdown, but it could be any string information.
 -}
 string : String -> String -> String -> Cmd msg
 string name mime content =
-  Task.perform never (Elm.Kernel.File.download name mime content)
+  Task.perform never (Native.File.download name mime content)
 
 
 {-| Download some `Bytes` as a file. Maybe you are creating custom images,
@@ -106,5 +106,5 @@ create `.zip` files, `.jpg` files, or whatever else you might need!
 -}
 bytes : String -> String -> Bytes -> Cmd msg
 bytes name mime content =
-  Task.perform never <| Elm.Kernel.File.download name mime <|
-    Elm.Kernel.File.makeBytesSafeForInternetExplorer content
+  Task.perform never <| Native.File.download name mime <|
+    Native.File.makeBytesSafeForInternetExplorer content

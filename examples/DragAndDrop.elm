@@ -1,5 +1,7 @@
-import Browser
+module Main exposing (Model, Msg(..), dropDecoder, hijackOn, init, main, subscriptions, update, view)
+
 import File exposing (File)
+import File.Compat.Json.Decode as D
 import File.Select as Select
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,12 +14,12 @@ import Json.Decode as D
 
 
 main =
-  Browser.element
-    { init = init
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 
@@ -25,14 +27,14 @@ main =
 
 
 type alias Model =
-  { hover : Bool
-  , files : List File
-  }
+    { hover : Bool
+    , files : List File
+    }
 
 
-init : () -> (Model, Cmd Msg)
-init _ =
-  (Model False [], Cmd.none)
+init : ( Model, Cmd Msg )
+init =
+    ( Model False [], Cmd.none )
 
 
 
@@ -40,37 +42,47 @@ init _ =
 
 
 type Msg
-  = Pick
-  | DragEnter
-  | DragLeave
-  | GotFiles File (List File)
+    = Pick
+    | DragEnter
+    | DragLeave
+    | GotFiles File (List File)
+    | GotValue D.Value
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    Pick ->
-      ( model
-      , Select.files ["image/*"] GotFiles
-      )
+    case msg of
+        Pick ->
+            ( model
+            , Select.files [ "image/*" ] GotFiles
+            )
 
-    DragEnter ->
-      ( { model | hover = True }
-      , Cmd.none
-      )
+        GotValue v ->
+            let
+                _ =
+                    Debug.log "<value: " v
+            in
+            ( model
+            , Cmd.none
+            )
 
-    DragLeave ->
-      ( { model | hover = False }
-      , Cmd.none
-      )
+        DragEnter ->
+            ( { model | hover = True }
+            , Cmd.none
+            )
 
-    GotFiles file files ->
-      ( { model
-            | files = file :: files
-            , hover = False
-        }
-      , Cmd.none
-      )
+        DragLeave ->
+            ( { model | hover = False }
+            , Cmd.none
+            )
+
+        GotFiles file files ->
+            ( { model
+                | files = file :: files
+                , hover = False
+              }
+            , Cmd.none
+            )
 
 
 
@@ -79,7 +91,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+    Sub.none
 
 
 
@@ -88,37 +100,42 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  div
-    [ style "border" (if model.hover then "6px dashed purple" else "6px dashed #ccc")
-    , style "border-radius" "20px"
-    , style "width" "480px"
-    , style "height" "100px"
-    , style "margin" "100px auto"
-    , style "padding" "20px"
-    , style "display" "flex"
-    , style "flex-direction" "column"
-    , style "justify-content" "center"
-    , style "align-items" "center"
-    , hijackOn "dragenter" (D.succeed DragEnter)
-    , hijackOn "dragover" (D.succeed DragEnter)
-    , hijackOn "dragleave" (D.succeed DragLeave)
-    , hijackOn "drop" dropDecoder
-    ]
-    [ button [ onClick Pick ] [ text "Upload Images" ]
-    , span [ style "color" "#ccc" ] [ text (Debug.toString model) ]
-    ]
+    div
+        [ style
+            [ ( "border"
+              , if model.hover then
+                    "6px dashed purple"
+
+                else
+                    "6px dashed #ccc"
+              )
+            ]
+        , style
+            [ ( "border-radius", "20px" )
+            , ( "width", "480px" )
+            , ( "height", "100px" )
+            , ( "margin", "100px auto" )
+            , ( "padding", "20px" )
+            , ( "display", "flex" )
+            , ( "flex-direction", "column" )
+            , ( "justify-content", "center" )
+            , ( "align-items", "center" )
+            ]
+        , hijackOn "dragenter" (D.succeed DragEnter)
+        , hijackOn "dragover" (D.succeed DragEnter)
+        , hijackOn "dragleave" (D.succeed DragLeave)
+        , hijackOn "drop" dropDecoder
+        ]
+        [ button [ onClick Pick ] [ text "Upload Images" ]
+        , span [ style [ ( "color", "#ccc" ) ] ] [ text (toString model) ]
+        ]
 
 
 dropDecoder : D.Decoder Msg
 dropDecoder =
-  D.at ["dataTransfer","files"] (D.oneOrMore GotFiles File.decoder)
+    D.at [ "dataTransfer", "files" ] (D.oneOrMore GotFiles File.decoder)
 
 
 hijackOn : String -> D.Decoder msg -> Attribute msg
 hijackOn event decoder =
-  preventDefaultOn event (D.map hijack decoder)
-
-
-hijack : msg -> (msg, Bool)
-hijack msg =
-  (msg, True)
+    onWithOptions event { preventDefault = True, stopPropagation = False } decoder

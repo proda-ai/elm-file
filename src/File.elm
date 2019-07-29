@@ -1,8 +1,10 @@
 module File exposing
   ( File
   , decoder
+
   , toString
   , toBytes
+
   , toUrl
   , name
   , mime
@@ -22,13 +24,15 @@ module File exposing
 # Read Metadata
 @docs name, mime, size, lastModified
 
+
+
 -}
 
 import Bytes exposing (Bytes)
-import Elm.Kernel.File
+import Native.File
 import Json.Decode as Decode
 import Task exposing (Task)
-import Time
+import Compat.Time as Time
 
 
 
@@ -57,7 +61,7 @@ to process the content. Or you can send the file along to someone else with the
 -}
 decoder : Decode.Decoder File
 decoder =
-  Elm.Kernel.File.decoder
+  Native.File.decoder
 
 
 
@@ -84,7 +88,7 @@ point having their content in memory!)
 -}
 toString : File -> Task x String
 toString =
-  Elm.Kernel.File.toString
+  Native.File.toString
 
 
 {-| Extract the content of a `File` as `Bytes`. So if you have an `archive.zip`
@@ -106,7 +110,7 @@ work with the bytes and turn them into whatever you want.
 -}
 toBytes : File -> Task x Bytes
 toBytes =
-  Elm.Kernel.File.toBytes
+  Native.File.toBytes
 
 
 {-| The `File.toUrl` function will convert files into URLs like this:
@@ -126,7 +130,7 @@ sure their old table looks great!
 -}
 toUrl : File -> Task x String
 toUrl =
-  Elm.Kernel.File.toUrl
+  Native.File.toUrl
 
 
 
@@ -141,7 +145,7 @@ toUrl =
 -}
 name : File -> String
 name =
-  Elm.Kernel.File.name
+  Native.File.name
 
 {-| Get the MIME type of a file.
 
@@ -151,7 +155,7 @@ name =
 -}
 mime : File -> String
 mime =
-  Elm.Kernel.File.mime
+  Native.File.mime
 
 
 {-| Get the size of the file in bytes.
@@ -162,7 +166,7 @@ mime =
 -}
 size : File -> Int
 size =
-  Elm.Kernel.File.size
+  Native.File.size
 
 
 {-| Get the time the file was last modified.
@@ -176,4 +180,4 @@ Learn more about how time is represented by reading through the
 -}
 lastModified : File -> Time.Posix
 lastModified =
-  Elm.Kernel.File.lastModified
+  Native.File.lastModified

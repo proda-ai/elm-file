@@ -33,7 +33,7 @@ before exposing a `Task` API for things.
 
 
 import Bytes exposing (Bytes)
-import Elm.Kernel.File
+import Native.File
 import File exposing (File)
 import Json.Decode as Decode
 import Task exposing (Task)
@@ -70,7 +70,7 @@ section on [limitations](#limitations) below.
 -}
 file : List String -> (File -> msg) -> Cmd msg
 file mimes toMsg =
-  Task.perform toMsg (Elm.Kernel.File.uploadOne mimes)
+  Task.perform toMsg (Native.File.uploadOne mimes)
 
 
 
@@ -108,4 +108,4 @@ files : List String -> (File -> List File -> msg) -> Cmd msg
 files mimes toMsg =
   Task.perform
     (\(f,fs) -> toMsg f fs)
-    (Elm.Kernel.File.uploadOneOrMore mimes)
+    (Native.File.uploadOneOrMore mimes)
